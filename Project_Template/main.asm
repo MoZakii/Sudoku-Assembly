@@ -215,9 +215,10 @@ ReadHelper PROC
 	call OpenInputFile
 	mov fileHandle , EAX
 	
-	mov edx,OFFSET buffer  
+	mov edx,OFFSET buffer  ;Fills buffer array from file
 	mov ecx,BUFFER_SIZE    
 	call ReadFromFile
+
 	Mov ecx , 9
 	Mov EDI , 0
 	Mov ESI , Address
@@ -227,7 +228,7 @@ ReadHelper PROC
 		mov ecx , 11
 		innerLoop:
 			
-			Mov AL , buffer[EDI]
+			Mov AL , buffer[EDI]	;if between 48 and 57 inclusive add to array (ASCii code for 0-9)
 			cmp AL , 48
 			JL skip
 			cmp AL , 57
@@ -235,8 +236,7 @@ ReadHelper PROC
 			Mov [ESI] , AL
 			INC ESI
 
-			skip:
-				
+			skip:		
 				INC EDI
 		LOOP innerLoop
 		mov ecx , edx
