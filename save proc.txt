@@ -1,0 +1,23 @@
+save PROC
+
+	mov edx,OFFSET savedfile ;game to be saved filename(saved.txt)
+	call CreateOutputFile	
+	
+	mov edx,offset data		 ;data to be saved(sudoko game)
+	mov ecx,BUFFER_SIZE
+	call WriteToFile		
+	
+	mov eax,fileHandle ;close the file
+	call CloseFile
+
+	mov edx,OFFSET savedsolutionfile ;solution to be saved filename(savedsolution.txt)
+	call CreateOutputFile	
+	
+	mov edx,offset data				 ;data to be saved(sudoko solved)
+	mov ecx,BUFFER_SIZE
+	call WriteToFile		;writes to file
+	
+	mov eax,fileHandle ;close the file
+	call CloseFile
+
+save ENDP
