@@ -29,6 +29,7 @@ Solved  BYTE "diff_1_1_solved.txt" , 0
 		BYTE "diff_3_3_solved.txt" , 0
 
 savedFile BYTE "saved.txt" , 0
+savedSolved BYTE "savedsolution.txt",0
 Address DWORD ?
 SudokuGame Byte FILESIZE dup (?)
 SudokuSolved Byte FILESIZE dup (?)
@@ -47,17 +48,19 @@ main PROC
 	call readInt
 	Mov Difficulity , AL
 	CALL ReadGameFile
+	jmp contprogram
 	Load:
 		Mov Difficulity , 4 ; 4th option
 		Call ReadGameFile
 	CALL CRLF
-
+	contprogram :
 	mov edx,OFFSET SudokuGame ;  To display the Game Array (for debugging purposes)
 	call WriteString
 	call Crlf
 	call Crlf
 	mov edx,OFFSET SudokuSolved ; To display the Solved Array (for debugging purposes)
 	call WriteString
+	call save
 	exit
 main ENDP
 
@@ -199,8 +202,7 @@ ReadGameFile PROC
 			mov EDX , offset savedFile
 			mov address , offset SudokuGame
 			CALL ReadHelper
-			mov EDX , offset Solved
-			;add EDX , SolvedName ; Multiply by solved index aka the number in the begining of file (NOT DONE)*******
+			mov EDX , offset savedSolved
 			mov address , offset SudokuSolved
 			CALL ReadHelper
 	Continue:
@@ -248,5 +250,29 @@ ReadHelper PROC
 
 	ret
 ReadHelper ENDP
+
+save PROC
+
+	mov edx,OFFSET savedFile ;game to be saved filename(saved.txt)
+	call CreateOutputFile	
+	
+	mov edx,offset SudokuGame		 ;data to be saved(sudoko game)
+	mov ecx,BUFFER_SIZE
+	call WriteToFile		
+	
+	mov eax,fileHandle ;close the file
+	call CloseFile
+
+	mov edx,OFFSET savedSolved ;solution to be saved filename(savedsolution.txt)
+	call CreateOutputFile	
+	
+	mov edx,offset SudokuSolved				 ;data to be saved(sudoko solved)
+	mov ecx,BUFFER_SIZE
+	call WriteToFile		;writes to file
+	
+	mov eax,fileHandle ;close the file
+	call CloseFile
+
+save ENDP
 
 END main
