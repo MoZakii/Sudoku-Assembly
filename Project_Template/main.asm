@@ -52,12 +52,13 @@ main PROC
 		Call ReadGameFile
 	CALL CRLF
 
-	mov edx,OFFSET SudokuGame ;  To display the Game Array (for debugging purposes)
-	call WriteString
-	call Crlf
-	call Crlf
-	mov edx,OFFSET SudokuSolved ; To display the Solved Array (for debugging purposes)
-	call WriteString
+	mov esi, offset SudokuGame
+	Call ShowSodokuGrid
+	;call Crlf
+	;call Crlf
+	;mov esi, offset SudokuSolved
+	;Call ShowSodokuGrid
+	
 	exit
 main ENDP
 
@@ -248,5 +249,136 @@ ReadHelper PROC
 
 	ret
 ReadHelper ENDP
+
+
+;--------------------------------
+;Function: Draw the entire Grid with the help of other drawing helper Function
+;Recieves: ESI which carries the offset of the desired grid to be draw
+;Returns: Void
+;--------------------------------
+ShowSodokuGrid proc
+
+call DrawFirstRow
+call CRLF
+mov ecx, 17 
+L1:
+	call DrawFirstElementinRow		
+	push ecx
+	shr ecx,1		
+	jc NumberRow	;jumps if the carry flag is 1 ( ecx is odd )	
+
+	jmp next 
+	NumberRow:
+	
+
+
+	next:
+	mwrite "                 " 
+	pop ecx 
+	call DrawLastElementinRow
+	call CRLF
+loop L1
+call DrawLastRow
+ret 
+ShowSodokuGrid endp
+
+
+;--------------------------------
+;Function: Draw the Last Row of the grid which is an edge
+;Recieves: CX which is the number of the row that defines which character would be put
+;Returns: Void
+;--------------------------------
+DrawLastRow Proc
+	mwrite 200
+	
+	mov ecx , 17 
+	l1:
+		mov ax, cx 
+		mov dl, 6
+		div dl
+		cmp ah, 0			; check the remaider of the division with 6
+		jne notcorner		; if not divisible 
+		mwrite 202			; draws a corner 
+		jmp next
+		notcorner:			; not divisable 
+		mwrite 205			; draws =
+		next: 
+	loop l1
+	mwrite 188
+ret 
+DrawLastRow endp
+
+
+;--------------------------------
+;Function: Draw the First Row of the grid which is an edge
+;Recieves: CX which is the number of the row that defines which character would be put
+;Returns: Void
+;--------------------------------
+DrawFirstRow proc
+	mwrite 201		;left corner
+
+	mov ecx , 17 
+	l1:
+		mov ax, cx 
+		mov dl, 6
+		div dl
+		cmp ah, 0			; check the remaider of the division with 6
+		jne notcorner		; if not divisible 
+		mwrite 203			; draws a corner 
+		jmp next
+		notcorner:			; not divisable 
+		mwrite 205			; draws =
+		next: 
+	loop l1
+		
+	mwrite 187		; right corner
+ret					
+DrawFirstRow endP
+
+
+;--------------------------------
+;Function: Draw the First element of the grid which is an edge (|| or ||=)
+;Recieves: CX which is the number of the row that defines which character would be put
+;Returns: Void
+;--------------------------------
+DrawFirstElementinRow Proc
+	mov ax, cx 
+	mov dl, 6
+	div dl			
+	cmp ah, 0		; check the remaider of the division with 6
+	jne notcorner	; if not divisible 
+	mwrite 204		; draws ||=
+	jmp next
+	notcorner:		; not divisable 
+	mwrite 186		; draws ||
+	next: 
+
+
+ret
+DrawFirstElementinRow endp
+
+
+
+
+
+;--------------------------------
+;Function: Draw the last element of the grid which is an edge (|| or =||)
+;Recieves: CX which is the number of the row that defines which character would be put
+;Returns: Void
+;--------------------------------
+DrawLastElementinRow Proc
+	mov ax, cx 
+	mov dl, 6
+	div dl		
+	cmp ah, 0		; check the remaider of the division with 6 
+	jne notcorner	; if not divisible 
+	mwrite 185		; draws =||
+	jmp next	
+	notcorner:		; not divisable 
+	mwrite 186		; draws ||
+	next:
+
+ret
+DrawLastElementinRow endp
 
 END main
