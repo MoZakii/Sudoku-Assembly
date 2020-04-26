@@ -47,17 +47,18 @@ main PROC
 	call readInt
 	Mov Difficulity , AL
 	CALL ReadGameFile
+	jmp continue 
 	Load:
 		Mov Difficulity , 4 ; 4th option
 		Call ReadGameFile
 	CALL CRLF
-
+	continue:
 	mov esi, offset SudokuGame
 	Call ShowSodokuGrid
-	;call Crlf
-	;call Crlf
-	;mov esi, offset SudokuSolved
-	;Call ShowSodokuGrid
+	call Crlf
+	call Crlf
+	mov esi, offset SudokuSolved
+	Call ShowSodokuGrid
 	
 	exit
 main ENDP
@@ -258,22 +259,21 @@ ReadHelper ENDP
 ;--------------------------------
 ShowSodokuGrid proc
 
-call DrawFirstRow
+call DrawFirstRow		 
 call CRLF
-mov ecx, 17 
+mov ecx, 11			
 L1:
 	call DrawFirstElementinRow		
-	push ecx
-	shr ecx,1		
-	jc NumberRow	;jumps if the carry flag is 1 ( ecx is odd )	
-
-	jmp next 
-	NumberRow:
-	
-
-
-	next:
-	mwrite "                 " 
+	push ecx 
+	mov dl, 4
+	call IsCXDivisbleByDL
+	cmp ah, 0			; check the remaider of the division with 4
+	jne NumberRow		; if not divisible 
+		call DrawEgdresRow 
+	jmp next
+	NumberRow:			; not divisable 
+		call DrawNumberRow 
+	next:	
 	pop ecx 
 	call DrawLastElementinRow
 	call CRLF
@@ -285,7 +285,6 @@ ShowSodokuGrid endp
 
 ;--------------------------------
 ;Function: Draw the Last Row of the grid which is an edge
-;Recieves: CX which is the number of the row that defines which character would be put
 ;Returns: Void
 ;--------------------------------
 DrawLastRow Proc
@@ -293,9 +292,8 @@ DrawLastRow Proc
 	
 	mov ecx , 17 
 	l1:
-		mov ax, cx 
 		mov dl, 6
-		div dl
+		call IsCXDivisbleByDL
 		cmp ah, 0			; check the remaider of the division with 6
 		jne notcorner		; if not divisible 
 		mwrite 202			; draws a corner 
@@ -311,7 +309,6 @@ DrawLastRow endp
 
 ;--------------------------------
 ;Function: Draw the First Row of the grid which is an edge
-;Recieves: CX which is the number of the row that defines which character would be put
 ;Returns: Void
 ;--------------------------------
 DrawFirstRow proc
@@ -319,9 +316,8 @@ DrawFirstRow proc
 
 	mov ecx , 17 
 	l1:
-		mov ax, cx 
 		mov dl, 6
-		div dl
+		call IsCXDivisbleByDL
 		cmp ah, 0			; check the remaider of the division with 6
 		jne notcorner		; if not divisible 
 		mwrite 203			; draws a corner 
@@ -330,7 +326,6 @@ DrawFirstRow proc
 		mwrite 205			; draws =
 		next: 
 	loop l1
-		
 	mwrite 187		; right corner
 ret					
 DrawFirstRow endP
@@ -338,13 +333,11 @@ DrawFirstRow endP
 
 ;--------------------------------
 ;Function: Draw the First element of the grid which is an edge (|| or ||=)
-;Recieves: CX which is the number of the row that defines which character would be put
 ;Returns: Void
 ;--------------------------------
 DrawFirstElementinRow Proc
-	mov ax, cx 
-	mov dl, 6
-	div dl			
+	mov dl, 4
+	call IsCXDivisbleByDL			
 	cmp ah, 0		; check the remaider of the division with 6
 	jne notcorner	; if not divisible 
 	mwrite 204		; draws ||=
@@ -352,24 +345,17 @@ DrawFirstElementinRow Proc
 	notcorner:		; not divisable 
 	mwrite 186		; draws ||
 	next: 
-
-
 ret
 DrawFirstElementinRow endp
 
 
-
-
-
 ;--------------------------------
 ;Function: Draw the last element of the grid which is an edge (|| or =||)
-;Recieves: CX which is the number of the row that defines which character would be put
 ;Returns: Void
 ;--------------------------------
 DrawLastElementinRow Proc
-	mov ax, cx 
-	mov dl, 6
-	div dl		
+	mov dl, 4
+	call IsCXDivisbleByDL		
 	cmp ah, 0		; check the remaider of the division with 6 
 	jne notcorner	; if not divisible 
 	mwrite 185		; draws =||
@@ -377,8 +363,75 @@ DrawLastElementinRow Proc
 	notcorner:		; not divisable 
 	mwrite 186		; draws ||
 	next:
-
 ret
 DrawLastElementinRow endp
 
+
+
+;--------------------------------
+;Function: Draw the row which contains numbers
+;Recieves: ESI which point to the current number to be displayed in the grid
+;Returns: Void
+;--------------------------------
+DrawNumberRow proc
+	mov al, [esi]
+	inc esi
+	call WriteChar
+	mov ecx, 8 
+	l1:
+		mov dl, 3
+		call IsCXDivisbleByDL		
+		cmp ah, 0		; check the remaider of the division with 6 
+		jne spaces	; if not divisible 
+			mwrite 186
+		jmp next	
+		spaces:		; not divisable 
+			mwrite " "
+		next: 
+		mov al, [esi]
+		inc esi
+		call WriteChar
+	loop l1
+	
+ret
+DrawNumberRow endp
+
+
+;--------------------------------
+;Function: Draw the row which contains only edges
+;Returns: Void
+;--------------------------------
+
+DrawEgdresRow proc
+	mov ecx, 17 
+	l1:
+		mov dl, 6
+		call IsCXDivisbleByDL		
+		cmp ah, 0		; check the remaider of the division with 6 
+		jne notcorner	; if not divisible 
+		mwrite 206		; draws =
+		jmp next	
+		notcorner:		; not divisable 
+		mwrite 205		; draws +
+		next:
+
+
+	loop l1
+
+ret 
+DrawEgdresRow endp
+
+
+;--------------------------------
+;Function: checks whether CX is divisible by DL
+;Recieves:	CX	the dividend 
+;			DL	the divisor
+;Returns: Al	the remainder of the division
+;--------------------------------
+
+IsCXDivisbleByDL proc 
+	mov ax, cx 
+	div dl		
+ret 
+IsCXDivisbleByDL endp 
 END main
